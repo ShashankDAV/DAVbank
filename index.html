@@ -193,7 +193,7 @@ document.querySelector(".transfer").addEventListener("click" , () => {
       var RID = document.querySelector(".receiver-id").value;
       var YID = localStorage.getItem("id");
       
-      var ym = 999999999;
+      var ym = 0;
       var rm = 0;
       
       firebase.database().ref().child("bank").child(RID).get().then((snapshot) => {
