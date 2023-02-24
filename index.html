@@ -1,0 +1,210 @@
+<style>
+*{
+      font-family: fantasy;
+}
+.get-started-btn{
+      width: 400px;
+      font-size: 50px;
+      height: 175px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #000045;
+      background: #00c3d0;
+      font-weight: 750;
+      border: 10px solid white;
+      border-radius: 25px;
+      margin-top: 90%;
+      margin-left: 30%;
+      outline: none;
+      user-select: none;
+}
+.get-started-btn:before{
+      content: '';
+      width: 420px;
+      height: 195px;
+      background: #00c3d9;
+      position: absolute;
+      z-index: -1;
+      border-radius: 25px;
+}
+.get-started-btn:hover{
+      background: #000045;
+      color: #00c3d0;
+}
+.get-started-btn:hover::before{
+      background: #000045;
+}
+.sign-in{
+      width: 80%;
+      background: #49ffc0;
+      height: 65%;
+      border-radius: 25px;
+      margin: 10%;
+      display: none;
+}
+
+.sign-in input{
+      width: 80%;
+      font-size: 75px;
+      padding: 25px 0;
+      border: none;
+      margin: 10% 10%;
+      border-radius: 25px;
+      outline: none;
+}
+
+.sign-in-btn{
+      width: 50%;
+      font-size: 75px;
+      padding: 25px 0;
+      border: none;
+      margin: 10% 25%;
+      border-radius: 25px;
+      outline: none;
+      color: white;
+      background: #07008f;
+}
+
+.main{
+      display: none;
+}
+
+.money-transfer input{
+      width: 80%;
+      font-size: 75px;
+      padding: 25px 0;
+      border: none;
+      margin: 10% 10%;
+      border-radius: 25px;
+      outline: none;
+      border: 5px solid #000045;
+}
+.money-transfer button{
+      width: 50%;
+      font-size: 75px;
+      padding: 25px 0;
+      border: none;
+      margin: 10% 25%;
+      border-radius: 25px;
+      outline: none;
+      color: white;
+      background: #07008f;
+}
+
+.money-transfer{
+      margin-top: 100px;
+      height: auto;
+      padding: 25px;
+      border: 5px solid #000045;
+      border-radius: 25px;
+}
+.bank-balance {
+      font-size: 50px;
+      position: fixed;
+      top: -30px;
+}
+</style>
+<body>
+<button class="get-started-btn">Get Started</button>
+<div class="sign-in">
+      <input placeholder="Name" class="name"><br>
+      <input placeholder="Password" class="password"><br>
+      <input readonly placeholder="Bank Id" class="bank-id">
+      <button class="sign-in-btn">Sign-In</button>
+</div>
+<div class="main">
+<h1 class="bank-balance">Bank-Balance : </h1>
+<div class="money-transfer">
+      <input class="receiver-id" placeholder="Receiver Bank Id">
+      <input type="int" class="ammount" placeholder="Enter Amount">
+      <button class="transfer">Transfer</button>
+</div>
+<div class="graph"></div>
+</div>
+</body>
+<script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
+const firebaseConfig = {
+    apiKey: "AIzaSyCV24K_7FARbMsRGwtw8lWSdCe8x9v4MzE",
+    authDomain: "live-shashankdav.firebaseapp.com",
+    projectId: "live-shashankdav",
+    storageBucket: "live-shashankdav.appspot.com",
+    messagingSenderId: "868265309052",
+    appId: "1:868265309052:web:12860b9948bbee6bb5aaf9"
+  };
+  
+firebase.initializeApp(firebaseConfig);
+
+var bankUsers = 0;
+firebase.database().ref("/"+"bank"+"/").on('value',(snap)=>{
+            bankUsers =  snap.numChildren();
+})
+
+var account = localStorage.getItem("account")
+      
+if (account==null){
+      document.querySelector(".get-started-btn").addEventListener("click" , () => {
+            document.querySelector(".get-started-btn").style.display = "none";
+            document.querySelector(".sign-in").style.display = "block";
+            document.querySelector(".sign-in-btn").addEventListener("click" , () => {
+                  var name = document.querySelector(".name").value;
+                  var pass = document.querySelector(".password").value;
+                  var data = {};
+                  data["name"] = name;
+                  data["password"] = pass;
+                  data["money"] = 0;
+                  var uId = "user" + (bankUsers + 1);
+                  firebase.database().ref(`/bank/`+uId).set(data , function(err) {
+                        if (err){
+                                    
+                        }
+                        else{
+                              document.querySelector(".sign-in-btn").disabled = "true";
+                              localStorage.setItem("account",true);
+                              localStorage.setItem("id",uId);
+                              localStorage.setItem("balance",0)
+                              document.querySelector(".sign-in").style.display = "none";
+                              document.querySelector(".main").style.display = "block";
+                        }
+                        })
+            })
+})}
+else{
+      document.querySelector(".get-started-btn").style.display = "none";
+      document.querySelector(".main").style.display = "block";
+}
+
+document.querySelector(".transfer").addEventListener("click" , () => {
+      document.querySelector(".transfer").disabled = "true";
+      var ammount = document.querySelector(".ammount").value;
+      var RID = document.querySelector(".receiver-id").value;
+      var YID = localStorage.getItem("id") - 1;
+      
+      var ym = 0;
+      var rm = 0;
+      
+      firebase.database().ref().child("bank").child(RID).get().then((snapshot) => {
+            rm = snapshot.val()["money"]
+})
+      firebase.database().ref().child("bank").child(YID).get().then((snapshot) => {
+            ym = snapshot.val()["money"]
+})
+      
+      if (ammount > ym){
+            alert("Not Enough Money In Bank")
+      }
+      else{
+            var nym = ym - ammount
+            var nrm = nm + ammount
+      }
+      
+      firebase.database().ref(`/bank/`+YID+"/money").set(nym)
+      firebase.database().ref(`/bank/`+RID+"/money").set(nrm)
+})
+      
+
+</script>
