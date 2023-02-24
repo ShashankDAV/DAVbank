@@ -93,7 +93,7 @@
 }
 
 .money-transfer{
-      margin-top: 100px;
+      margin-top: 150px;
       height: auto;
       padding: 25px;
       border: 5px solid #000045;
@@ -103,6 +103,11 @@
       font-size: 50px;
       position: fixed;
       top: -30px;
+}
+.bank-idd{
+      font-size: 50px;
+      position: fixed;
+      top: 30px;
 }
 </style>
 <body>
@@ -115,6 +120,7 @@
 </div>
 <div class="main">
 <h1 class="bank-balance">Bank-Balance : </h1>
+<h1 class="bank-idd">Bank Id : </h1>
 <div class="money-transfer">
       <input class="receiver-id" placeholder="Receiver Bank Id">
       <input type="int" class="ammount" placeholder="Enter Amount">
@@ -176,35 +182,41 @@ if (account==null){
 else{
       document.querySelector(".get-started-btn").style.display = "none";
       document.querySelector(".main").style.display = "block";
+      setInterval( () => {
+            document.querySelector(".bank-idd").innerHTML = "Your Bank Id : " + localStorage.getItem("id");
+            document.querySelector(".bank-balance").innerHTML = "Your Bank Balance : " + localStorage.getItem("money");
+      } , 10)
 }
 
 document.querySelector(".transfer").addEventListener("click" , () => {
       document.querySelector(".transfer").disabled = "true";
       var ammount = document.querySelector(".ammount").value;
       var RID = document.querySelector(".receiver-id").value;
-      var YID = localStorage.getItem("id") - 1;
+      var YID = localStorage.getItem("id");
       
-      var ym = 0;
+      var ym = 999999999;
       var rm = 0;
       
       firebase.database().ref().child("bank").child(RID).get().then((snapshot) => {
-            rm = snapshot.val()["money"]
+            rm = parseInt(snapshot.val()["money"])
 })
       firebase.database().ref().child("bank").child(YID).get().then((snapshot) => {
-            ym = snapshot.val()["money"]
+            ym = parseInt(snapshot.val()["money"])
 })
       
       if (ammount > ym){
             alert("Not Enough Money In Bank")
       }
       else{
-            var nym = ym - ammount
-            var nrm = nm + ammount
+            var nym = parseInt(ym - ammount)
+            var nrm = parseInt(rm + ammount)
+            localStorage.setItem("money",nym)
+            alert("Success")
+            window.location.reload()
       }
       
       firebase.database().ref(`/bank/`+YID+"/money").set(nym)
       firebase.database().ref(`/bank/`+RID+"/money").set(nrm)
 })
-      
 
 </script>
